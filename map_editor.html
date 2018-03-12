@@ -3,8 +3,10 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script>
         var color;
+        var className;
         var isDown;
         var classes=[];
+        var colorToClassName={"0/0/0/0" : "blank"};
         var colors=[];
         function set_color(a_color) {
             color = a_color;
@@ -43,14 +45,14 @@
             }
             drawUncheckedRect(ev);
         }
+        var width = 10;
+        var height = 10;
         function drawUncheckedRect(ev) {
             if (!color) {
                 return;
             }
             var canvas = document.getElementById('canvas');
             var ctx = canvas.getContext("2d");
-            var width = 10;
-            var height = 10;
             var x, y;
 
             // Get the mouse position relative to the <canvas> element
@@ -70,6 +72,8 @@
 
             ctx.fillStyle = "#" + color;
             ctx.fillRect(posx,posy,width,height);
+            rgba = ctx.getImageData(posx, posy, 1, 1).data;
+            colorToClassName[rgba.join("/")] = className;
 
         }
         $(document).ready(function(){
@@ -82,14 +86,27 @@
         });
         function export_map() {
             map_as_string = "";
-            for (cursor_y = (width / 2); cursor_y < $("#canvas").width(); cursor_y+=width) {
-                for (cursor.x = (height / 2); cursor.x < $("#canvas").height(); cursor_x+=height) {
-                    // TODO get tile type for cursorx, cursory
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext("2d");
+            var locationToClassName = {};
+            grid_x = -1;
+            grid_y = -1;
+            for (cursor_y = (width / 2); cursor_y <= $("#canvas").width(); cursor_y+=width) {
+                grid_x += 1;
+                for (cursor_x = (height / 2); cursor_x <= $("#canvas").height(); cursor_x+=height) {
+                    grid_y += 1;
+                    rgba = ctx.getImageData(cursor_x, cursor_y, 1, 1).data;
+                    thisClassName = colorToClassName[rgba.join("/")];
+                    if (thisClassName != "blank") {
+                        locationToClassName[[grid_x, grid_y].join("/")] = thisClassName;
+                        console.log([grid_x, grid_y].join("/") + "=" + thisClassName);
+                    }
                 }
+                grid_y = -1;
             }
             content = "<input id=\"dump\"/>";
             $( "#classes" ).append(content);
-            $( "#dump" ).val(map_as_string);
+            $( "#dump" ).val(JSON.stringify(locationToClassName));
         }
     </script>
     Color: <input class="jscolor" value="ab2567" id="colorPicker">
