@@ -1,0 +1,105 @@
+<html>
+    <script src="jscolor.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        var color;
+        var isDown;
+        var classes=[];
+        var colors=[];
+        function set_color(a_color) {
+            color = a_color;
+            console.log(color);
+        }
+        function generate_class() {
+            className = $("#className").val();
+            pickedColor = $('#colorPicker').val();
+            if (classes.includes(className)) {
+                return;
+            }
+            if (colors.includes(pickedColor)) {
+                return;
+            }
+            content = "<div style='float:left'><div class='color-box' style='height:10px;width:20px;background-color: " + pickedColor + "'></div><button " + "onclick=set_color(\"" + pickedColor + "\")>" + className + "</button></div>";
+            $( "#classes" ).append(content);
+            classes.push(className);
+            colors.push(pickedColor)
+            console.log("made a class");
+        }
+        function findPos(obj) {
+            var curleft = 0, curtop = 0;
+            if (obj.offsetParent) {
+                do {
+                    curleft += obj.offsetLeft;
+                    curtop += obj.offsetTop;
+                } while (obj = obj.offsetParent);
+                return { x: curleft, y: curtop };
+            }
+            return undefined;
+        }
+
+        function drawCheckedRect(ev) {
+            if (!isDown) {
+                return;
+            }
+            drawUncheckedRect(ev);
+        }
+        function drawUncheckedRect(ev) {
+            if (!color) {
+                return;
+            }
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext("2d");
+            var width = 10;
+            var height = 10;
+            var x, y;
+
+            // Get the mouse position relative to the <canvas> element
+            if (ev.layerX || ev.layerX == 0) { // Firefox
+                x = ev.layerX;
+                y = ev.layerY;
+            } else if (ev.offsetX || ev.offsetX == 0) { // Opera
+                x = ev.offsetX;
+                y = ev.offsetY;
+            }
+
+            posx = x - (width / 2)
+            posy = y - (height / 2)
+
+            posx = parseInt(x / width) * width;
+            posy = parseInt(y / height) * height;
+
+            ctx.fillStyle = "#" + color;
+            ctx.fillRect(posx,posy,width,height);
+
+        }
+        $(document).ready(function(){
+            $(document).mousedown(function() {
+                isDown = true;      // When mouse goes down, set isDown to true
+            }).mouseup(function() {
+                isDown = false;    // When mouse goes up, set isDown to false
+            });
+
+        });
+        function export_map() {
+            map_as_string = "";
+            for (cursor_y = (width / 2); cursor_y < $("#canvas").width(); cursor_y+=width) {
+                for (cursor.x = (height / 2); cursor.x < $("#canvas").height(); cursor_x+=height) {
+                    // TODO get tile type for cursorx, cursory
+                }
+            }
+            content = "<input id=\"dump\"/>";
+            $( "#classes" ).append(content);
+            $( "#dump" ).val(map_as_string);
+        }
+    </script>
+    Color: <input class="jscolor" value="ab2567" id="colorPicker">
+    <div id="classes">
+        <input id="className"/>
+        <button onclick="generate_class()">generate_class </button>
+        <button onclick="export_map()">export map! </button>
+    </div>
+    <div style="float:right">
+        <canvas id="canvas" width="1000" height="600" style="border:1px solid #000000;" onmousedown="drawUncheckedRect(event, false)" onmousemove="drawCheckedRect(event)" >
+        </canvas>
+    </div>
+</html>
